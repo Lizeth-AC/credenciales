@@ -1,16 +1,18 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Box, Typography, Paper, Button, Grid, Dialog, DialogTitle } from '@mui/material';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const QRScanner = () => {
   const [error, setError] = useState('');
   const [scanning, setScanning] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
   const qrCodeRegionId = 'qr-scanner-region';
-  const html5QrCodeRef = useRef(null); 
+  const html5QrCodeRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // 👉 Inicia el escáner manual o automáticamente si ya se escaneó antes
   const startScanner = async () => {
     setError('');
     const scannerRegion = document.getElementById(qrCodeRegionId);
@@ -21,14 +23,14 @@ const QRScanner = () => {
       html5QrCodeRef.current = html5QrCode;
 
       await html5QrCode.start(
-        { facingMode: "environment" },
+        { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
           stopScanner();
           handleScanSuccess(decodedText);
         },
         (scanError) => {
-          console.warn("Scan error:", scanError);
+          console.warn('Scan error:', scanError);
         }
       );
 
@@ -45,13 +47,13 @@ const QRScanner = () => {
           await html5QrCodeRef.current.stop();
         }
       } catch (err) {
-        console.warn("Error al detener:", err);
+        console.warn('Error al detener:', err);
       }
 
       try {
         html5QrCodeRef.current.clear();
       } catch (err) {
-        console.warn("Error al limpiar:", err);
+        console.warn('Error al limpiar:', err);
       }
 
       html5QrCodeRef.current = null;
@@ -70,6 +72,9 @@ const QRScanner = () => {
   const handleInfo = () => setOpenInfo(true);
 
   const handleScanSuccess = (decodedText) => {
+    // 👇 Guardamos que ya escaneó una vez
+    sessionStorage.setItem('yaEscaneo', 'true');
+
     // Redirigir según tipo de token
     const encodedToken = encodeURIComponent(decodedText);
     if (decodedText.startsWith('externo-')) {
@@ -79,8 +84,21 @@ const QRScanner = () => {
     }
   };
 
+  // 👇 Cada vez que se vuelve a esta ruta, revisa si debe iniciar el escáner automáticamente
+  useEffect(() => {
+    const yaEscaneo = sessionStorage.getItem('yaEscaneo');
+
+    if (yaEscaneo && !scanning) {
+      startScanner();
+    }
+
+    return () => {
+      stopScanner();
+    };
+  }, [location]);
+
   return (
-    <Paper sx={{ p:3, maxWidth:500, margin:'auto', borderRadius:3, height:600, position:'relative' }}>
+    <Paper sx={{ p: 3, maxWidth: 500, margin: 'auto', borderRadius: 3, height: 600, position: 'relative' }}>
       <Box>
         <Grid container spacing={0.5} flexDirection="row" justifyContent={'center'} mb={1}>
           <img src={`/TEDLogo.png`} alt="Logo TED" style={{ width: '35px', height: '100%' }} />
@@ -89,46 +107,87 @@ const QRScanner = () => {
         </Grid>
 
         <Typography align="center" color="primary.main" fontSize={12} lineHeight={1.2}>
-          {"ELECCIONES GENERALES 2025"}
+          {'ELECCIONES GENERALES 2025'}
           <br />
-          {"SISTEMA DE ACCESO CÓMPUTO"}
-          <br /><br />
+          {'SISTEMA DE ACCESO CÓMPUTO'}
+          <br />
+          <br />
         </Typography>
 
-        <Box id={qrCodeRegionId} sx={{
-          width:'100%', height:'400px', borderRadius:2, border:'2px dashed #ccc',
-          backgroundImage:`url('/EleccionesLogo.png')`, backgroundSize:'80% auto',
-          backgroundRepeat:'no-repeat', backgroundPosition:'center center', position:'relative', overflow:'hidden', opacity:0.5
-        }} />
+        <Box
+          id={qrCodeRegionId}
+          sx={{
+            width: '100%',
+            height: '400px',
+            borderRadius: 2,
+            border: '2px dashed #ccc',
+            backgroundImage: `url('/EleccionesLogo.png')`,
+            backgroundSize: '80% auto',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center center',
+            position: 'relative',
+            overflow: 'hidden',
+            opacity: 0.5,
+          }}
+        />
       </Box>
 
       <Box mt={2} display="flex" flexDirection="row" alignItems="center" justifyContent="center" gap={1}>
-        {!scanning && (
-          <Button onClick={async ()=>{ await stopScanner(); await startScanner(); }} variant="contained" sx={{ color:'white', backgroundColor:'#07854E' }}>ESCANEAR</Button>
+        {/* 🔹 Solo muestra el botón ESCANEAR la primera vez */}
+        {!scanning && !sessionStorage.getItem('yaEscaneo') && (
+          <Button
+            onClick={async () => {
+              await stopScanner();
+              await startScanner();
+            }}
+            variant="contained"
+            sx={{ color: 'white', backgroundColor: '#07854E' }}
+          >
+            ESCANEAR
+          </Button>
         )}
+
         {scanning && (
-          <Button onClick={stopScanner} variant="contained" sx={{ color:'#FFFFFF', backgroundColor:'primary.main' }}>DETENER</Button>
+          <Button
+            onClick={stopScanner}
+            variant="contained"
+            sx={{ color: '#FFFFFF', backgroundColor: 'primary.main' }}
+          >
+            DETENER
+          </Button>
         )}
-        <Button onClick={handleInfo} variant="contained" sx={{ color:'white', backgroundColor:'secondary.main' }}>Acerca de</Button>
-        <Button onClick={handleClear} variant="contained" sx={{ color:'white', backgroundColor:'red' }}>Limpiar</Button>
+
+        <Button onClick={handleInfo} variant="contained" sx={{ color: 'white', backgroundColor: 'secondary.main' }}>
+          Acerca de
+        </Button>
+        <Button onClick={handleClear} variant="contained" sx={{ color: 'white', backgroundColor: 'red' }}>
+          Limpiar
+        </Button>
       </Box>
 
-      {error && <Typography mt={2} color="error">⚠️ {error}</Typography>}
+      {error && (
+        <Typography mt={2} color="error">
+          ⚠️ {error}
+        </Typography>
+      )}
 
-      <Dialog open={openInfo} onClose={()=>setOpenInfo(false)}>
-        <DialogTitle sx={{ fontWeight:'bold' }}>Información</DialogTitle>
+      <Dialog open={openInfo} onClose={() => setOpenInfo(false)}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Información</DialogTitle>
         <Box p={2}>
           <Typography fontSize={14}>
             Desarrollado por Tecnologías del Tribunal Electoral Departamental de Cochabamba.
-            <br/><br/>
+            <br />
+            <br />
           </Typography>
           <Typography fontSize={14}>
             Este sistema permite escanear códigos QR para registrar el acceso a las salas de cómputo.
-            <br/>
+            <br />
             Asegúrese de enfocar correctamente el código QR. Si tiene problemas, verifique los permisos de la cámara.
           </Typography>
           <Box mt={2} textAlign="right">
-            <Button onClick={()=>setOpenInfo(false)} variant="contained">Cerrar</Button>
+            <Button onClick={() => setOpenInfo(false)} variant="contained">
+              Cerrar
+            </Button>
           </Box>
         </Box>
       </Dialog>
