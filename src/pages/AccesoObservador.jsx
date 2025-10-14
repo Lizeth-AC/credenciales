@@ -11,6 +11,7 @@ import {
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import FormularioObservador from '../components/organisms/FormularioObservador'; 
+import { useLocation } from 'react-router-dom';
 
 function AccesoObservador() {
   const { token } = useParams();
@@ -53,6 +54,18 @@ function AccesoObservador() {
       } catch (_) {}
     };
   }, [datos?.msg, token]);
+  const location = useLocation();
+
+  useEffect(() => {
+    const yaEscaneo = sessionStorage.getItem('yaEscaneo');
+    if (yaEscaneo && !scanning) {
+      startScanner();
+    }
+    return () => {
+      stopScanner();
+    };
+  }, [location]);
+
 
   const consultarAcceso = async (tokenParam) => {
     setLoading(true);
