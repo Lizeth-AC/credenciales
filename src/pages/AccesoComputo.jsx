@@ -126,10 +126,9 @@ function AccesoComputo() {
             clearInterval(interval);
             console.log("Inicio: ",cameFrom)
             const destino =
-              cameFrom === 'lector_qr'
-                ? 'http://localhost:5173/lector_qr'
-                : 'http://localhost:5173/qr';
+              navigate(-1);
             window.location.href = destino;
+            console.log("Destino: ",destino)
             return 0;
           }
           return prev - 1;
