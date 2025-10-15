@@ -25,7 +25,7 @@ function AccesoComputo() {
   const hasCalled = useRef(false);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
-  const [segundos, setSegundos] = useState(60);
+  const [segundos, setSegundos] = useState(20);
 
   // ---- Detectar desde dónde vino ----
   const cameFrom = location.state?.from || 
@@ -124,6 +124,7 @@ function AccesoComputo() {
         setSegundos((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
+            console.log("Inicio: ",cameFrom)
             const destino =
               cameFrom === 'lector_qr'
                 ? 'http://localhost:5173/lector_qr'
