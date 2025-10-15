@@ -72,17 +72,16 @@ const QRScanner = () => {
   const handleInfo = () => setOpenInfo(true);
 
   const handleScanSuccess = (decodedText) => {
-    // 👇 Guardamos que ya escaneó una vez
-    sessionStorage.setItem('yaEscaneo', 'true');
+  const cleaned = decodedText.replace(/['"]/g, '-').trim(); // limpia comillas
+  sessionStorage.setItem('yaEscaneo', 'true');
+  const encodedToken = encodeURIComponent(cleaned);
+  if (cleaned.startsWith('externo-')) {
+    navigate(`/accesoObservador/${encodedToken}`);
+  } else {
+    navigate(`/accesoComputo/${encodedToken}`);
+  }
+};
 
-    // Redirigir según tipo de token
-    const encodedToken = encodeURIComponent(decodedText);
-    if (decodedText.startsWith('externo-')) {
-      navigate(`/accesoObservador/${encodedToken}`);
-    } else {
-      navigate(`/accesoComputo/${encodedToken}`);
-    }
-  };
 
   // 👇 Cada vez que se vuelve a esta ruta, revisa si debe iniciar el escáner automáticamente
   useEffect(() => {
@@ -96,6 +95,39 @@ const QRScanner = () => {
       stopScanner();
     };
   }, [location]);
+  // 👇 Detecta lector de código de barras (que actúa como teclado)
+useEffect(() => {
+  let barcodeBuffer = '';
+  let lastKeyTime = Date.now();
+
+  const handleKeyDown = (e) => {
+    const now = Date.now();
+
+    // Si pasa mucho tiempo entre teclas, resetea
+    if (now - lastKeyTime > 50) barcodeBuffer = '';
+    lastKeyTime = now;
+
+    // Ignora si se presionan teclas especiales (Shift, Ctrl, etc.)
+    if (e.key.length === 1) {
+      barcodeBuffer += e.key;
+    } else if (e.key === 'Enter') {
+      const code = barcodeBuffer.trim();
+      barcodeBuffer = '';
+
+      if (code) {
+        stopScanner(); // Por si el QR está activo
+        handleScanSuccess(code); // Usa la misma lógica del QR
+      }
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+
+  return () => {
+    window.removeEventListener('keydown', handleKeyDown);
+  };
+}, []);
+
 
   return (
     <Paper sx={{ p: 3, maxWidth: 500, margin: 'auto', borderRadius: 3, height: 600, position: 'relative' }}>
