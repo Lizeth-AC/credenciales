@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react'; 
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -17,13 +17,21 @@ function AccesoComputo() {
   const tokenFromQuery = search.get('token');
   const token = tokenFromParams || tokenFromQuery;
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [respuesta, setRespuesta] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const hasCalled = useRef(false);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
+  const [segundos, setSegundos] = useState(60);
 
+  // ---- Detectar desde dónde vino ----
+  const cameFrom = location.state?.from || 
+    (document.referrer.includes("/lector_qr") ? "lector_qr" : "qr");
+
+  // ---- Voz ----
   const speakText = (text) => {
     try {
       if (!text) return;
@@ -61,37 +69,21 @@ function AccesoComputo() {
     if (loading) {
       setProgress(0);
       progressIntervalRef.current = setInterval(() => {
-        setProgress((prev) => {
-          // Deja al 95% hasta que termine el fetch
-          if (prev >= 95) return 95;
-          return prev + 5;
-        });
+        setProgress((prev) => (prev >= 95 ? 95 : prev + 5));
       }, 200);
     } else {
-      // Completa a 100% cuando termina
       setProgress(100);
       clearInterval(progressIntervalRef.current);
     }
     return () => clearInterval(progressIntervalRef.current);
   }, [loading]);
-  // ---- Redirigir automáticamente a /lector_qr después de 1 minuto ----
-useEffect(() => {
-  if (respuesta) {
-    const timer = setTimeout(() => {
-      navigate('/lector_qr'); // redirige a la página del lector
-    }, 60000); // 60,000 milisegundos = 1 minuto
 
-    return () => clearTimeout(timer); // limpiar si se desmonta antes
-  }
-}, [respuesta, navigate]);
-
-
+  // ---- Registrar acceso ----
   const registrarAcceso = async (tokenParam) => {
     setLoading(true);
     setError(null);
     setRespuesta(null);
 
-    // Timeout manual (por si el WebView se queda colgado)
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 10000); // 10s
 
@@ -125,6 +117,27 @@ useEffect(() => {
     }
   };
 
+  // ---- Redirigir o refrescar después de 1 minuto ----
+  useEffect(() => {
+    if (respuesta) {
+      const interval = setInterval(() => {
+        setSegundos((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            const destino =
+              cameFrom === 'lector_qr'
+                ? 'http://localhost:5173/lector_qr'
+                : 'http://localhost:5173/qr';
+            window.location.href = destino;
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [respuesta, cameFrom]);
+
   return (
     <Grid
       padding={1}
@@ -150,15 +163,16 @@ useEffect(() => {
         <Box mb={1} mt={1} ml={1}>
           <Button variant="outlined" onClick={() => navigate(-1)}>Atrás</Button>
         </Box>
+
         {loading && (
           <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            my: 2,
-            position: 'relative',
-          }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              my: 2,
+              position: 'relative',
+            }}
           >
             <CircularProgress
               variant="determinate"
@@ -250,7 +264,7 @@ useEffect(() => {
                 <Box backgroundColor="primary.main" width="1.5px"></Box>
                 <img
                   src={`/EleccionesLogo.png`}
-                  alt="Logo TED"
+                  alt="Logo Elecciones"
                   style={{ width: '90px', height: '100%' }}
                 />
               </Grid>
@@ -285,6 +299,14 @@ useEffect(() => {
                 </Box>
               </Grid>
             </Grid>
+
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ mt: 1 }}
+            >
+              Redirigiendo en {segundos}s...
+            </Typography>
           </Box>
         )}
       </Paper>

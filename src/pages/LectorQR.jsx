@@ -71,10 +71,8 @@ const LectorQR = () => {
 
   const handleInfo = () => setOpenInfo(true);
 
-  // ✅ Actualizado: limpia caracteres raros y redirige según tipo
   const handleScanSuccess = (decodedText) => {
-    const cleaned = decodedText.replace(/['"]/g, '-').trim(); // limpia comillas o espacios
-    console.log('Código detectado:', cleaned);
+    const cleaned = decodedText.replace(/['"]/g, '-').trim();
 
     const encodedToken = encodeURIComponent(cleaned);
     if (cleaned.startsWith('externo-')) {
@@ -84,7 +82,6 @@ const LectorQR = () => {
     }
   };
 
-  // ✅ Nuevo: Soporte para lector de barras (pistola)
   useEffect(() => {
     let barcodeBuffer = '';
     let lastKeyTime = Date.now();
@@ -92,7 +89,6 @@ const LectorQR = () => {
     const handleKeyDown = (e) => {
       const now = Date.now();
 
-      // Si pasan más de 50ms entre teclas, se reinicia el buffer
       if (now - lastKeyTime > 50) barcodeBuffer = '';
       lastKeyTime = now;
 
@@ -103,8 +99,7 @@ const LectorQR = () => {
         barcodeBuffer = '';
 
         if (code && !scanning) {
-          console.log('Lector de barras detectó:', code);
-          stopScanner(); // detiene el QR si está activo
+          stopScanner();
           handleScanSuccess(code);
         }
       }
@@ -115,7 +110,7 @@ const LectorQR = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [scanning]); // se reactiva si cambia el estado del escáner
+  }, [scanning]);
 
   return (
     <Paper
