@@ -218,7 +218,7 @@ function AccesoObservador() {
                   </>
                 ) : null}
               </Typography>
-              <Typography><strong>Tipo:</strong> {datos.observador.tipo}</Typography>
+              <Typography><strong>Tipo:</strong>{datos.observador.tipo}</Typography>
             </Box>
 
             <Grid container justifyContent="space-between" alignItems="center">
@@ -233,7 +233,7 @@ function AccesoObservador() {
             </Grid>
 
             <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Redirigiendo en {segundos}s...
+              Redirigiendo en {segundos} s...
             </Typography>
           </Box>
         )}

@@ -58,7 +58,7 @@ const NavBar = (anchoCaja) => {
             }}
             onClick={handleLogout}
           >
-            <NotificationsIcon />
+            {/* <NotificationsIcon /> */}
           </Button>
           <Typography
             variant="h6"
