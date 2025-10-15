@@ -73,7 +73,7 @@ const LectorQR = () => {
 
   // ✅ Actualizado: limpia caracteres raros y redirige según tipo
   const handleScanSuccess = (decodedText) => {
-    const cleaned = decodedText.replace(/['"]/g, '').trim(); // limpia comillas o espacios
+    const cleaned = decodedText.replace(/['"]/g, '-').trim(); // limpia comillas o espacios
     console.log('Código detectado:', cleaned);
 
     const encodedToken = encodeURIComponent(cleaned);

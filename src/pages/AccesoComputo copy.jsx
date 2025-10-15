@@ -74,17 +74,6 @@ function AccesoComputo() {
     }
     return () => clearInterval(progressIntervalRef.current);
   }, [loading]);
-  // ---- Redirigir automáticamente a /lector_qr después de 1 minuto ----
-useEffect(() => {
-  if (respuesta) {
-    const timer = setTimeout(() => {
-      navigate('/lector_qr'); // redirige a la página del lector
-    }, 60000); // 60,000 milisegundos = 1 minuto
-
-    return () => clearTimeout(timer); // limpiar si se desmonta antes
-  }
-}, [respuesta, navigate]);
-
 
   const registrarAcceso = async (tokenParam) => {
     setLoading(true);
