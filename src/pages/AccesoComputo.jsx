@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'; 
-import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -17,7 +17,6 @@ function AccesoComputo() {
   const tokenFromQuery = search.get('token');
   const token = tokenFromParams || tokenFromQuery;
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [respuesta, setRespuesta] = useState(null);
   const [error, setError] = useState(null);
@@ -25,13 +24,9 @@ function AccesoComputo() {
   const hasCalled = useRef(false);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
-  const [segundos, setSegundos] = useState(20);
+  const [segundos, setSegundos] = useState(8);
 
-  // ---- Detectar desde dónde vino ----
-  const cameFrom = location.state?.from || 
-    (document.referrer.includes("/lector_qr") ? "lector_qr" : "qr");
 
-  // ---- Voz ----
   const speakText = (text) => {
     try {
       if (!text) return;
@@ -56,7 +51,6 @@ function AccesoComputo() {
     };
   }, [respuesta?.msg]);
 
-  // ---- Llamada inicial ----
   useEffect(() => {
     if (token && !hasCalled.current) {
       registrarAcceso(token);
@@ -64,7 +58,6 @@ function AccesoComputo() {
     }
   }, [token]);
 
-  // ---- Progreso visual mientras carga ----
   useEffect(() => {
     if (loading) {
       setProgress(0);
@@ -78,14 +71,13 @@ function AccesoComputo() {
     return () => clearInterval(progressIntervalRef.current);
   }, [loading]);
 
-  // ---- Registrar acceso ----
   const registrarAcceso = async (tokenParam) => {
     setLoading(true);
     setError(null);
     setRespuesta(null);
 
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000); // 10s
+    const id = setTimeout(() => controller.abort(), 5000);
 
     try {
       const res = await fetch(
@@ -117,26 +109,21 @@ function AccesoComputo() {
     }
   };
 
-  // ---- Redirigir o refrescar después de 1 minuto ----
   useEffect(() => {
     if (respuesta) {
       const interval = setInterval(() => {
         setSegundos((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
-            console.log("Inicio: ",cameFrom)
-            const destino =
-              navigate(-1);
-            window.location.href = destino;
-            console.log("Destino: ",destino)
+            navigate(-1);
             return 0;
           }
           return prev - 1;
         });
-      }, 500);
+      }, 1000);
       return () => clearInterval(interval);
     }
-  }, [respuesta, cameFrom]);
+  }, [respuesta, navigate]);
 
   return (
     <Grid
