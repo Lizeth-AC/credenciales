@@ -24,7 +24,7 @@ function AccesoComputo() {
   const hasCalled = useRef(false);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
-  const [segundos, setSegundos] = useState(8);
+  const [segundos, setSegundos] = useState(5);
 
 
   const speakText = (text) => {
@@ -147,10 +147,6 @@ function AccesoComputo() {
           overflow: 'hidden',
         }}
       >
-        <Box mb={1} mt={1} ml={1}>
-          <Button variant="outlined" onClick={() => navigate(-1)}>Atrás</Button>
-        </Box>
-
         {loading && (
           <Box
             sx={{

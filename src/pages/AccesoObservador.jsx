@@ -22,8 +22,10 @@ function AccesoObservador() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [tipo_credencial, setTipo_credencial] = useState(null);
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
+  const [segundos, setSegundos] = useState(5);
 
   const hasCalled = useRef(false);
+
   const speakText = (text) => {
     try {
       if (!text) return;
@@ -113,29 +115,24 @@ function AccesoObservador() {
     }
   };
 
-  const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
-
   const eliminarDatos = async () => {
-    const token = datos?.observador?.token_acceso;
+    const tokenAcceso = datos?.observador?.token_acceso;
 
-    if (!token) {
+    if (!tokenAcceso) {
       setAlert({ open: true, message: "No se encontró el token del registro", severity: "error" });
       return;
     }
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/liberarToken/${token}`,
+        `${import.meta.env.VITE_API_URL}/liberarToken/${tokenAcceso}`,
         { method: "POST" }
       );
       const data = await response.json();
 
       if (data.res === true) {
         setAlert({ open: true, message: data.msg, severity: "success" });
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        setTimeout(() => navigate(-1), 1000);
       } else {
         setAlert({ open: true, message: data.msg || "Error al eliminar", severity: "error" });
       }
@@ -144,16 +141,37 @@ function AccesoObservador() {
       setAlert({ open: true, message: "Error al eliminar Personal", severity: "error" });
     }
   };
+
+  useEffect(() => {
+    if (datos) {
+      const interval = setInterval(() => {
+        setSegundos(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            navigate(-1);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [datos, navigate]);
+
+  const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
+
   return (
     <Grid padding={2} minHeight="95vh" display="flex" justifyContent="center" alignItems="center">
       <Paper elevation={3} style={{ borderRadius: 15, padding: 20, maxWidth: 600, width: '100%' }}>
         <Box mb={2}>
-          <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mr: 1 }}>Atrás</Button>
+          {mostrarFormulario && (
+            <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mr: 1 }}>Atrás</Button>
+          )}
           {!mostrarFormulario && (
             <Button variant="outlined" onClick={() => eliminarDatos()}>Eliminar Datos</Button>
           )}
-          
         </Box>
+
         {loading && (
           <Box display="flex" justifyContent="center" alignItems="center" my={2}>
             <CircularProgress />
@@ -184,21 +202,13 @@ function AccesoObservador() {
               </Typography>
               <Typography><strong>CI:</strong> {datos.observador.ci}</Typography>
               <img
-                src={
-                  datos.observador.foto
-                    ? `data:image/jpeg;base64,${datos.observador.foto}`
-                    : `/IconoPerfil.jpg`
-                }
+                src={datos.observador.foto ? `data:image/jpeg;base64,${datos.observador.foto}` : `/IconoPerfil.jpg`}
                 alt="Foto del personal"
-                style={{
-                  width: '150px',
-                  borderRadius: '10px',
-                  marginTop: '5px',
-                }}
+                style={{ width: '150px', borderRadius: '10px', marginTop: '5px' }}
               />
               <Typography><strong>Nombre Completo:</strong> {datos.observador.nombre_completo}</Typography>
               <Typography>
-                {datos.observador.tipo === "delegado" || datos.observador.tipo === "candidato" || datos.observador.tipo === "observador"? (
+                {['delegado','candidato','observador'].includes(datos.observador.tipo) ? (
                   <>
                     <strong>Organización:</strong> {datos.observador.organizacion_politica}
                   </>
@@ -221,6 +231,10 @@ function AccesoObservador() {
                 <Typography>{new Date().toLocaleTimeString()}</Typography>
               </Box>
             </Grid>
+
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Redirigiendo en {segundos}s...
+            </Typography>
           </Box>
         )}
       </Paper>
