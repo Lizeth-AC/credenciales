@@ -15,6 +15,7 @@ import AccesoComputo from '../pages/AccesoComputo';
 import AccesoObservador from '../pages/AccesoObservador';
 import QRScanner from '../pages/QRScanner'; // 👈 Asegúrate de importar el componente
 import PrivateRoute from '../pages/Login/PrivateRoute';
+import LectorQR from '../pages/LectorQR';
 
 const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/preview" element={<PreviewPage />} />
         <Route path="/accesoComputo/:token" element={<AccesoComputo />} />
         <Route path="/accesoObservador/:token" element={<AccesoObservador />} />
+        <Route path="/lector_qr" element={<LectorQR />} /> 
         <Route path="/qr" element={<QRScanner />} /> {/* 👈 Ruta al escáner */}
 
         {/* Redirección según tipo de dispositivo */}
