@@ -25,25 +25,23 @@ const GestionarUnidad = () => {
   const [filtroGeneral, setFiltroGeneral] = useState('');
   const [unidad, setUnidad] = useState([]);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
-  const [dialog, setDialog] = useState({ open: false, id: null });
+  const [dialog, setDialog] = useState({ open: false, id: null, nombre: '' });
 
   const showAlert = (message, severity = 'info') => {
     setAlert({ open: true, message, severity });
   };
 
-  const handleCloseAlert = () => {
-    setAlert((prev) => ({ ...prev, open: false }));
-  };
+  const handleCloseAlert = () => setAlert((prev) => ({ ...prev, open: false }));
 
-  const handleOpenDialog = (id) => {
-    setDialog({ open: true, id });
+  const handleOpenDialog = (id, nombre) => {
+    setDialog({ open: true, id, nombre });
   };
 
   const handleCloseDialog = () => {
-    setDialog({ open: false, id: null });
+    setDialog({ open: false, id: null, nombre: '' });
   };
 
-  const eliminarUnidad = async (id, onDeleteSuccess) => {
+  const eliminarUnidad = async (id, nombreUnidad, onDeleteSuccess) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/secciones/${id}`, {
         method: 'DELETE',
@@ -53,10 +51,10 @@ const GestionarUnidad = () => {
       const res = await response.json();
 
       if (response.ok && res.res) {
-        showAlert('Unidad eliminada exitosamente', 'success');
+        showAlert(`Unidad "${nombreUnidad}" eliminada exitosamente`, 'success');
         if (onDeleteSuccess) onDeleteSuccess();
       } else {
-        showAlert(res.msg || 'No se pudo eliminar', 'error');
+        showAlert(res.msg || 'No se pudo eliminar la unidad', 'error');
       }
     } catch (error) {
       console.error('Error al eliminar:', error);
@@ -65,23 +63,24 @@ const GestionarUnidad = () => {
   };
 
   const eliminarUnidadDeLista = (id) => {
-    setUnidad((prev) => prev.filter((unidad) => unidad.id !== id));
+    setUnidad((prev) => prev.filter((u) => u.id !== id));
   };
-
-  useEffect(() => {
-    obtenerListaUnidad();
-  }, []);
 
   const obtenerListaUnidad = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/secciones`);
       if (!response.ok) throw new Error('Error al obtener la lista de secciones');
       const data = await response.json();
-      setUnidad(data);
+      setUnidad(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error al obtener secciones:', error);
+      showAlert('Error al cargar las unidades', 'error');
     }
   };
+
+  useEffect(() => {
+    obtenerListaUnidad();
+  }, []);
 
   const columns = [
     { id: 'nombre', label: 'Nombre Unidad', width: 180 },
@@ -105,21 +104,39 @@ const GestionarUnidad = () => {
         <Box sx={{ display: 'flex', gap: 2 }}>
           <CustomFormCargo idseccion={row.id} />
           <EditUnidadModal unidad={row} onSuccess={obtenerListaUnidad} />
-          <CustomDeleteIcon onClick={() => handleOpenDialog(row.id)} />
+          <CustomDeleteIcon onClick={() => handleOpenDialog(row.id, row.nombre)} />
         </Box>
       ),
     },
   ];
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
+    <Box
+      sx={{
+        width: '100%',
+        minHeight: '100vh',
+        bgcolor: '#fff',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        py: 4,
+      }}
+    >
       <Box sx={{ width: '100%', maxWidth: 1000 }}>
         <Typography variant='h5' align='center' gutterBottom>
-          Lista de Unidad
+          Lista de Unidades
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Typography variant="body1">Buscar:</Typography>
             <TextField
               variant="outlined"
@@ -145,20 +162,19 @@ const GestionarUnidad = () => {
         >
           <CustomTable
             columns={columns}
-            rows={unidad.filter((unidad) => {
+            rows={unidad.filter((u) => {
               const texto = filtroGeneral.toLowerCase();
               return (
-                (unidad.nombre?.toLowerCase() || "").includes(texto) ||
-                (unidad.abreviatura?.toLowerCase() || "").includes(texto) ||
-                String(unidad.estado).toLowerCase().includes(texto)
+                (u.nombre?.toLowerCase() || '').includes(texto) ||
+                (u.abreviatura?.toLowerCase() || '').includes(texto) ||
+                String(u.estado).toLowerCase().includes(texto)
               );
             })}
-            onClickRow={(row) => console.log()}
+            onClickRow={() => {}}
           />
         </Paper>
       </Box>
 
-      {/* Snackbar */}
       <Snackbar
         open={alert.open}
         autoHideDuration={4000}
@@ -170,17 +186,18 @@ const GestionarUnidad = () => {
         </Alert>
       </Snackbar>
 
-      {/* Dialog de confirmación */}
       <Dialog open={dialog.open} onClose={handleCloseDialog}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>¿Estás segura/o de eliminar este registro?</DialogContent>
+        <DialogContent>
+          {`¿Estás segura/o de eliminar la unidad "${dialog.nombre}"?`}
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
           <Button
             color="error"
             variant="contained"
             onClick={() => {
-              eliminarUnidad(dialog.id, () => eliminarUnidadDeLista(dialog.id));
+              eliminarUnidad(dialog.id, dialog.nombre, () => eliminarUnidadDeLista(dialog.id));
               handleCloseDialog();
             }}
           >

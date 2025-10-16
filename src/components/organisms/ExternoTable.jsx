@@ -22,8 +22,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Tab,
+  Checkbox,
 } from "@mui/material";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -34,7 +36,7 @@ import CustomEditIcon from "../atoms/CustomEditIcon";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import FormularioObservador from "../organisms/FormularioObservador";
 import EditarObservador from "./EditObservador";
-import { Checkbox } from "@mui/material";
+
 const chunkArray = (array, size = 9) => {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
@@ -58,6 +60,21 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
   const [selectedCi, setSelectedCi] = useState(null);
   const [selectedTipo, setSelectedTipo] = useState(null);
 
+  const [dialog, setDialog] = useState({ open: false, id: null, nombre: "", item: null });
+
+  const handleOpenDialog = (item) => {
+    setDialog({
+      open: true,
+      id: item.id,
+      nombre: item.nombre_completo || item.ci || "Registro sin nombre",
+      item,
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({ open: false, id: null, nombre: "", item: null });
+  };
+
   const handleOpenForm = (item) => {
     setSelectedToken(item.token_acceso);
     setSelectedTipo(item.tipo);
@@ -68,18 +85,19 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
     setSelectedTokens((prev) =>
       prev.includes(token)
         ? prev.filter((t) => t !== token)
-        : [...prev, token] 
+        : [...prev, token]
     );
   };
 
   const handleCloseForm = () => setOpenForm(false);
   const closeAlert = () => setAlert({ ...alert, open: false });
-  // Ordenamiento
+
   const handleSort = (field) => {
     const isAsc = orderBy === field && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(field);
   };
+
   // Filtrado
   const handleFilterChange = (field) => (e) => {
     setFilters({ ...filters, [field]: e.target.value });
@@ -161,19 +179,12 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
       if (values.organizacion_politica) body.append("organizacion_politica", values.organizacion_politica);
       if (values.foto) body.append("foto", values.foto);
 
-      console.log("Contenido real de FormData:");
-      for (let [key, val] of body.entries()) {
-        console.log(key, val);
-      }
-
       const response = await fetch(`${import.meta.env.VITE_API_URL}/activarQr/${selectedToken}`, {
         method: "POST",
         body,
       });
 
       const data = await response.json();
-      console.log("Respuesta backend:", data);
-      
       if (data.res === true) {
         setAlert({ open: true, message: "Observador registrado correctamente", severity: "success" });
         handleCloseForm();
@@ -199,10 +210,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
     }
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/liberarToken/${token}`,
-        { method: "POST" }
-      );
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/liberarToken/${token}`, { method: "POST" });
       const data = await response.json();
 
       if (data.res === true) {
@@ -226,32 +234,26 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
 
     try {
       const query = new URLSearchParams();
-      selectedTokens.forEach(token => query.append("tokens[]", token)); 
+      selectedTokens.forEach((token) => query.append("tokens[]", token));
 
-      const resp = await fetch(
-        `${import.meta.env.VITE_API_URL}/acceso-externo/listar?${query.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/acceso-externo/listar?${query.toString()}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
 
       if (!resp.ok) throw new Error("Error al obtener datos para previsualizar");
 
       const data = await resp.json();
       const personsArray = Array.isArray(data) ? data : data.datos;
-      console.log("Datos obtenidos para previsualizar:", personsArray);
+
       if (!Array.isArray(personsArray)) {
         setAlert({ open: true, message: "La API no devolvió un array válido", severity: "error" });
         return;
       }
 
-      // Guardamos localStorage igual que antes
       localStorage.setItem("credenciales_preview_pages", JSON.stringify(chunkArray(personsArray, 9)));
       localStorage.setItem("credenciales_preview_acceso", 0);
-      localStorage.setItem("credenciales_preview_ids", JSON.stringify(personsArray.map(d => d.qr || d.barcode)));
+      localStorage.setItem("credenciales_preview_ids", JSON.stringify(personsArray.map((d) => d.qr || d.barcode)));
 
       window.open("/preview", "_blank", "width=900,height=1400");
     } catch (error) {
@@ -296,12 +298,10 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                 <TableCell padding="checkbox">
                   <Checkbox
                     indeterminate={
-                      selectedTokens.length > 0 &&
-                      selectedTokens.length < paginatedData.length
+                      selectedTokens.length > 0 && selectedTokens.length < paginatedData.length
                     }
                     checked={
-                      paginatedData.length > 0 &&
-                      selectedTokens.length === paginatedData.length
+                      paginatedData.length > 0 && selectedTokens.length === paginatedData.length
                     }
                     onChange={(e) => {
                       if (e.target.checked) {
@@ -312,24 +312,64 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                     }}
                   />
                 </TableCell>
-                <TableCell>
-                  <TableSortLabel active={orderBy === "id"} direction={orderBy === "id" ? order : "asc"} onClick={() => handleSort("id")}>
+
+                <TableCell sortDirection={orderBy === "ci" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "ci"}
+                    direction={orderBy === "ci" ? order : "asc"}
+                    onClick={() => handleSort("ci")}
+                  >
                     C. I.
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
-                  <TableSortLabel active={orderBy === "tipo"} direction={orderBy === "tipo" ? order : "asc"} onClick={() => handleSort("tipo")}>
+
+                <TableCell sortDirection={orderBy === "tipo" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "tipo"}
+                    direction={orderBy === "tipo" ? order : "asc"}
+                    onClick={() => handleSort("tipo")}
+                  >
                     Tipo
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Nombre Completo</TableCell>
+
+                <TableCell sortDirection={orderBy === "nombre_completo" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "nombre_completo"}
+                    direction={orderBy === "nombre_completo" ? order : "asc"}
+                    onClick={() => handleSort("nombre_completo")}
+                  >
+                    Nombre Completo
+                  </TableSortLabel>
+                </TableCell>
+
                 <TableCell>Foto</TableCell>
-                <TableCell>Token</TableCell>
-                <TableCell>Activo</TableCell>
+
+                <TableCell sortDirection={orderBy === "token_acceso" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "token_acceso"}
+                    direction={orderBy === "token_acceso" ? order : "asc"}
+                    onClick={() => handleSort("token_acceso")}
+                  >
+                    Token
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell sortDirection={orderBy === "activo" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "activo"}
+                    direction={orderBy === "activo" ? order : "asc"}
+                    onClick={() => handleSort("activo")}
+                  >
+                    Activo
+                  </TableSortLabel>
+                </TableCell>
+
                 <TableCell>Sigla</TableCell>
                 <TableCell>Opciones</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {paginatedData.map((item) => (
                 <TableRow key={item.token_acceso}>
@@ -343,10 +383,30 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                   <TableCell>{item.tipo}</TableCell>
                   <TableCell>{item.nombre_completo || "-"}</TableCell>
                   <TableCell>
-                    {item.foto ? <img src={`data:image/jpeg;base64,${item.foto}`} alt="foto" width={40} height={40} style={{ borderRadius: "20%" }} /> : item.ci?"Sin foto": "-"}
+                    {item.foto ? (
+                      <img
+                        src={`data:image/jpeg;base64,${item.foto}`}
+                        alt="foto"
+                        width={40}
+                        height={40}
+                        style={{ borderRadius: "20%" }}
+                      />
+                    ) : item.ci ? (
+                      "Sin foto"
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell>{item.token_acceso || "-"}</TableCell>
-                  <TableCell>{item.activo === 1 ? "Sí" : "No"}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      {item.activo === 1 ? (
+                        <CheckCircleIcon color="success" titleAccess="Activo" />
+                      ) : (
+                        <CancelIcon color="error" titleAccess="No Activo" />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell>
                     {item.tipo === "delegado" || item.tipo === "candidato" || item.tipo === "observador"
                       ? item.organizacion_politica || "-"
@@ -371,16 +431,17 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                           }
                         }}
                         style={{
-                          cursor: item.activo === 0 || item.activo === 0 ? "pointer" : "not-allowed",
-                          opacity: item.activo === 0 || item.activo === 0 ? 1 : 0.5,
+                          cursor: item.activo === 0 ? "pointer" : "not-allowed",
+                          opacity: item.activo === 0 ? 1 : 0.5,
                         }}
                         titleAccess={
-                          item.activo === 0 || item.activo === 0
+                          item.activo === 0
                             ? "Agregar Persona"
                             : `Ya está asociado a un personal de ${item.tipo}`
                         }
                       />
-                      <CustomEditIcon 
+
+                      <CustomEditIcon
                         onClick={() => {
                           if (item.activo === 1) {
                             setSelectedCi(item.ci);
@@ -394,10 +455,11 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                           }
                         }}
                       />
-                      <CustomDeleteIcon 
+
+                      <CustomDeleteIcon
                         onClick={() => {
                           if (item.activo === 1) {
-                            eliminarDatos(item)
+                            handleOpenDialog(item);
                           } else {
                             setAlert({
                               open: true,
@@ -405,7 +467,7 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
                               severity: "info",
                             });
                           }
-                        }} 
+                        }}
                       />
                     </Box>
                   </TableCell>
@@ -421,12 +483,36 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           page={page}
           onPageChange={(e, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
           rowsPerPageOptions={[5, 10, 25]}
         />
       </Paper>
 
-      
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog open={dialog.open} onClose={handleCloseDialog}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          {`¿Estás segura/o de eliminar el registro "${dialog.nombre}"?`}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancelar</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              eliminarDatos(dialog.item);
+              handleCloseDialog();
+            }}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo de formulario */}
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="sm">
         <DialogContent>
           {selectedCi ? (
@@ -448,7 +534,6 @@ const ExternoTable = ({ data, onDeleteSuccess }) => {
           )}
         </DialogContent>
       </Dialog>
-
     </Box>
   );
 };

@@ -36,13 +36,13 @@ const GestionarCargo = () => {
   };
   const closeAlert = () => setAlert({ ...alert, open: false });
 
-  const eliminarCargo = (id, onDeleteSuccess) => {
+  const eliminarCargo = (cargo, onDeleteSuccess) => {
     setConfirmDialog({
       open: true,
-      title: '¿Estás segura/o de eliminar este registro?',
+      title: `¿Estás segura/o de eliminar el cargo "${cargo.nombre}"?`,
       onConfirm: async () => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/cargos/${id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/cargos/${cargo.id}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
           });
@@ -50,7 +50,7 @@ const GestionarCargo = () => {
           const res = await response.json();
 
           if (response.ok && res.res) {
-            showAlert('Cargo eliminado exitosamente', 'success');
+            showAlert(`Se eliminó correctamente el cargo "${cargo.nombre}"`, 'success');
             if (onDeleteSuccess) onDeleteSuccess();
           } else {
             showAlert(res.msg || 'No se pudo eliminar', 'error');
@@ -66,7 +66,7 @@ const GestionarCargo = () => {
   };
 
   const eliminarCargoDeLista = (id) => {
-    setCargos((prev) => prev.filter((cargos) => cargos.id !== id));
+    setCargos((prev) => prev.filter((c) => c.id !== id));
   };
 
   const obtenerListaCargos = async () => {
@@ -74,7 +74,8 @@ const GestionarCargo = () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/cargos-secciones`);
       if (!response.ok) throw new Error('Error al obtener la lista de cargos');
       const data = await response.json();
-      setCargos(data.cargos);
+
+      setCargos(Array.isArray(data.cargos) ? data.cargos : []);
     } catch (error) {
       console.error("Error al obtener cargos:", error);
       showAlert('Error al cargar los cargos', 'error');
@@ -87,14 +88,15 @@ const GestionarCargo = () => {
 
   const rowsOrdenadosYFiltrados = useMemo(() => {
     const texto = filtroNombre.trim().toLowerCase();
-    return cargos
-      .filter((c) => c.nombre.toLowerCase().includes(texto))
+
+    return (cargos || [])
+      .filter((c) => c?.nombre?.toLowerCase().includes(texto))
       .sort((a, b) => {
         if (ordenarPor === 'seccion') {
-          const comp = a.seccion.localeCompare(b.seccion);
+          const comp = (a?.seccion || '').localeCompare(b?.seccion || '');
           return ordenSeccionAsc ? comp : -comp;
         } else {
-          const comp = a.nombre.localeCompare(b.nombre);
+          const comp = (a?.nombre || '').localeCompare(b?.nombre || '');
           return ordenNombreAsc ? comp : -comp;
         }
       });
@@ -164,7 +166,11 @@ const GestionarCargo = () => {
       render: (row) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
           <EditCargoModal cargo={row} onSuccess={obtenerListaCargos} />
-          <CustomDeleteIcon onClick={() => eliminarCargo(row.id, () => eliminarCargoDeLista(row.id))} />
+          <CustomDeleteIcon
+            onClick={() =>
+              eliminarCargo(row, () => eliminarCargoDeLista(row.id))
+            }
+          />
         </Box>
       )
     },
@@ -172,19 +178,19 @@ const GestionarCargo = () => {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', py: 4 }}>
-      {/* Snackbar para alertas */}
       <Snackbar open={alert.open} autoHideDuration={3000} onClose={closeAlert}>
         <Alert severity={alert.severity} onClose={closeAlert} variant="filled">
           {alert.message}
         </Alert>
       </Snackbar>
 
-      {/* Dialog de confirmación */}
       <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>
         <DialogTitle>{confirmDialog.title}</DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDialog({ open: false, onConfirm: null, title: '' })}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDialog.onConfirm}>Eliminar</Button>
+          <Button color="error" variant="contained" onClick={() => confirmDialog.onConfirm?.()}>
+            Eliminar
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -221,8 +227,8 @@ const GestionarCargo = () => {
         >
           <CustomTable
             columns={columns}
-            rows={rowsOrdenadosYFiltrados}
-            onClickRow={(row) => console.log()}
+            rows={Array.isArray(rowsOrdenadosYFiltrados) ? rowsOrdenadosYFiltrados : []}
+            onClickRow={() => {}}
           />
         </Paper>
       </Box>

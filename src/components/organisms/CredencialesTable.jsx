@@ -65,9 +65,14 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
   };
 
   const eliminarPersonal = (id) => {
+    const persona = data.find((item) => item.id === id);
+    const nombreCompleto = persona
+      ? `${persona.nombre || ''} ${persona.paterno || ''} ${persona.materno || ''}`.trim()
+      : 'este registro';
+
     setConfirmDialog({
       open: true,
-      title: '¿Estás segura/o de eliminar este registro?',
+      title: `¿Estás segura/o de eliminar a ${nombreCompleto}?`,
       onConfirm: async () => {
         try {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/personal/${id}`, {
@@ -76,7 +81,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
           });
           const res = await response.json();
           if (response.ok && res.res) {
-            showAlert('Personal eliminado exitosamente', 'success');
+            showAlert(`Se eliminó correctamente a ${nombreCompleto}`, 'success');
             if (onDeleteSuccess) onDeleteSuccess();
           } else {
             showAlert(res.msg || 'No se pudo eliminar', 'error');
@@ -87,7 +92,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
         } finally {
           setConfirmDialog({ open: false, onConfirm: null, title: '' });
         }
-      }
+      },
     });
   };
 

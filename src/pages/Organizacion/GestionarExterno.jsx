@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import CustomSendIcon from '../../components/atoms/CustomSendIcon';
 
-// Evita llamar la variable "alert", para no chocar con el alert() global del navegador
 const GestionarExterno = () => {
   const [cargoSeleccionado, setCargoSeleccionado] = useState('');
   const [cantidad, setCantidad] = useState('');
@@ -188,18 +187,17 @@ const GestionarExterno = () => {
         </Box>
       </Box>
       {alerta.open && (
-  <Box sx={{ position: "fixed", bottom: 20, right: 20 }}>
-    <Alert
-      severity={alerta.severity}
-      onClose={() => setAlerta({ ...alerta, open: false })}
-      variant="filled"
-      sx={{ width: '100%' }}
-    >
-      {alerta.message}
-    </Alert>
-  </Box>
-)}
-
+        <Box sx={{ position: "fixed", bottom: 20, right: 20 }}>
+          <Alert
+            severity={alerta.severity}
+            onClose={() => setAlerta({ ...alerta, open: false })}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {alerta.message}
+          </Alert>
+        </Box>
+      )}
     </Box>
   );
 };

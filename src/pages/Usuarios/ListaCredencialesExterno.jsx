@@ -16,7 +16,6 @@ const ListaCredencialesExterno = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 🔄 obtener datos desde API
   const obtenerPersonal = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -38,7 +37,6 @@ const ListaCredencialesExterno = () => {
     obtenerPersonal();
   }, [obtenerPersonal]);
 
-  // 📌 Filtrado y ordenamiento con useMemo (mejor performance)
   const personalFiltrado = useMemo(() => {
     return personal
       .filter((item) => {
@@ -55,22 +53,6 @@ const ListaCredencialesExterno = () => {
         return ordenAsc ? cargoA.localeCompare(cargoB) : cargoB.localeCompare(cargoA);
       });
   }, [personal, filtroNombre, filtroCI, ordenAsc]);
-
-  // ✅ función para pasar al hijo y abrir ventana de edición
-  const abrirVentanaEdicion = (idPersonal) => {
-    const nuevaVentana = window.open(
-      `/editar-personal/${idPersonal}`,
-      '_blank',
-      'width=800,height=600'
-    );
-
-    const timer = setInterval(() => {
-      if (nuevaVentana.closed) {
-        clearInterval(timer);
-        obtenerPersonal(); // 🔄 recargar datos al cerrar
-      }
-    }, 500);
-  };
 
   return (
     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 2 }}>
