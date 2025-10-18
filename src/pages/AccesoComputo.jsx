@@ -24,7 +24,7 @@ function AccesoComputo() {
   const hasCalled = useRef(false);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef(null);
-  const [segundos, setSegundos] = useState(5);
+  const [segundos, setSegundos] = useState(3);
 
 
   const speakText = (text) => {
