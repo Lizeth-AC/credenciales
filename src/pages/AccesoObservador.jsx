@@ -22,7 +22,7 @@ function AccesoObservador() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [tipo_credencial, setTipo_credencial] = useState(null);
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
-  const [segundos, setSegundos] = useState(5);
+  const [segundos, setSegundos] = useState(4);
 
   const hasCalled = useRef(false);
 
