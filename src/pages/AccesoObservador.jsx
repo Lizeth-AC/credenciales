@@ -158,8 +158,12 @@ function AccesoObservador() {
     }
   }, [datos, navigate]);
 
-  const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
-
+  // const colorFondo = datos?.tipo === 'entrada' ? '#1AB394' : '#F8AC59';
+  const colorFondo = !datos?.tipo
+  ? '#8fe3ff'
+  : datos.tipo === 'entrada'
+  ? '#1AB394'
+  : '#F8AC59';
   return (
     <Grid padding={2} minHeight="95vh" display="flex" justifyContent="center" alignItems="center">
       <Paper elevation={3} style={{ borderRadius: 15, padding: 20, maxWidth: 600, width: '100%' }}>
