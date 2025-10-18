@@ -223,7 +223,7 @@ function AccesoComputo() {
               >
                 <Typography variant="body1">
                   <strong>CI: </strong>
-                  {`${respuesta.personal.ci} ${respuesta.personal.complemento || ''}`}
+                  {`${respuesta.personal.ci}`}
                 </Typography>
                 <Typography variant="body1">
                   {respuesta.personal.cargo_nombre}
