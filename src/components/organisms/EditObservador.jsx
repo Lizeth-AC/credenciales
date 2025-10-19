@@ -68,7 +68,7 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const validationSchema = Yup.object({
-    nombre_completo: Yup.string().required("Campo obligatorio"),
+    nombre_completo: Yup.string().,
     ci: Yup.string().required("Campo obligatorio"),
     identificador: Yup.string().nullable(),
     organizacion_politica: Yup.string().nullable(),
