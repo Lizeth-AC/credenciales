@@ -115,7 +115,7 @@ function FormularioObservador({ onSubmit, loading, tipo, onCancel, celular }) {
       {({ setFieldValue, values }) => (
         <Form>
           <Box display="flex" flexDirection="column" gap={1}>
-            <Typography variant="h6" align="center">Registro de Observador</Typography>
+            <Typography variant="h6" align="center">Registro de {tipo}</Typography>
 
             <Autocomplete
               freeSolo
