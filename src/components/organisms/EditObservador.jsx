@@ -149,7 +149,7 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
       {({ setFieldValue, isSubmitting }) => (
         <Form>
           <Typography variant="h6" align="center" gutterBottom>
-            Editar Observador
+            Editar {tipo}
           </Typography>
 
           <CustomTextField name="nombre_completo" label="Nombre completo" />
