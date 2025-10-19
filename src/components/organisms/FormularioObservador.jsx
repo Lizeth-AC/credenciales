@@ -69,7 +69,7 @@ function FormularioObservador({ onSubmit, loading, tipo, onCancel, celular }) {
   };
 
   const validationSchema = Yup.object({
-    nombre_completo: Yup.string().required('Campo obligatorio'),
+    nombre_completo: Yup.string(),
     identificador: Yup.string().nullable(),
     organizacion_politica: Yup.string().nullable(),
   });
@@ -145,11 +145,11 @@ function FormularioObservador({ onSubmit, loading, tipo, onCancel, celular }) {
               )}
             />
 
-            <CustomTextField name="nombre_completo" label="Nombre completo" required onlyLetters />
+            <CustomTextField name="nombre_completo" label="Nombre completo" onlyLetters />
             {(tipo === 'delegado' || tipo === 'candidato' || tipo === 'observador') && (
-              <CustomTextField name="organizacion_politica" label="Organización Política" required />
+              <CustomTextField name="organizacion_politica" label="Organización Política"  />
             )}
-            {tipo === 'prensa' && <CustomTextField name="identificador" label="Identificador" required />}
+            {tipo === 'prensa' && <CustomTextField name="identificador" label="Identificador"  />}
 
             {/* Botón subir foto */}
             <Button variant="outlined" component="label">
