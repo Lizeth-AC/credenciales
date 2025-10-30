@@ -85,7 +85,7 @@ const EditUnidadModal = ({ unidad, onSuccess }) => {
 
       <CustomEditIcon onClick={handleOpen} />
       <CustomModal
-        title="Editar Cargo"
+        title="Editar Unidad"
         fields={fields}
         open={open}
         onClose={handleClose}
