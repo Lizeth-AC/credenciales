@@ -40,6 +40,7 @@ async function getCroppedImg(imageSrc, cropPixels) {
       );
 
       canvas.toBlob(async (blob) => {
+        if (!blob) return reject(new Error("Error al generar la imagen."));
         const compressedBlob = await imageCompression(blob, { maxSizeMB: 0.3 });
         resolve(new File([compressedBlob], "foto.jpg", { type: "image/jpeg" }));
       }, "image/jpeg", 0.8);
@@ -67,8 +68,9 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   const [imageSrc, setImageSrc] = useState(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
+  // ✅ Corrección en la validación de Yup
   const validationSchema = Yup.object({
-    nombre_completo: Yup.string().,
+    nombre_completo: Yup.string().required("Campo obligatorio"),
     ci: Yup.string().required("Campo obligatorio"),
     identificador: Yup.string().nullable(),
     organizacion_politica: Yup.string().nullable(),
@@ -118,14 +120,17 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
       body.append("id", formData.id);
       body.append("nombre_completo", values.nombre_completo);
       body.append("ci", values.ci);
-      body.append("identificador", values.identificador);
-      body.append("organizacion_politica", values.organizacion_politica);
+      body.append("identificador", values.identificador || "");
+      body.append("organizacion_politica", values.organizacion_politica || "");
       if (values.foto) body.append("foto", values.foto);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`, {
-        method: "POST",
-        body,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/actualizar-observador/${token}`,
+        {
+          method: "POST",
+          body,
+        }
+      );
 
       const data = await res.json();
       if (data.res === true) {
@@ -145,7 +150,12 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
   if (fetching) return <CircularProgress />;
 
   return (
-    <Formik enableReinitialize initialValues={formData} validationSchema={validationSchema} onSubmit={handleSubmit}>
+    <Formik
+      enableReinitialize
+      initialValues={formData}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
       {({ setFieldValue, isSubmitting }) => (
         <Form>
           <Typography variant="h6" align="center" gutterBottom>
@@ -156,13 +166,21 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
           <CustomTextField name="ci" label="CI" />
 
           {tipo === "delegado" || tipo === "candidato" || tipo === "observador" ? (
-            <CustomTextField name="organizacion_politica" label="Organización Política" />
+            <CustomTextField
+              name="organizacion_politica"
+              label="Organización Política"
+            />
           ) : tipo === "prensa" ? (
             <CustomTextField name="identificador" label="Identificador" />
           ) : null}
 
           <Box mt={1}>
-            <Button variant="outlined" component="label" sx={{ mr: 1 }} size="small">
+            <Button
+              variant="outlined"
+              component="label"
+              sx={{ mr: 1 }}
+              size="small"
+            >
               {preview ? "Cambiar foto" : "Subir foto"}
               <input
                 type="file"
@@ -182,32 +200,50 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
                 }}
               />
             </Button>
-            {preview ? (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                setImageSrc(preview);
-                setOpenCropper(true);
-                setZoom(1);
-              }}
-            >
-              Editar imagen
-            </Button>) : null}
+            {preview && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setImageSrc(preview);
+                  setOpenCropper(true);
+                  setZoom(1);
+                }}
+              >
+                Editar imagen
+              </Button>
+            )}
           </Box>
+
           {preview && (
             <Box mt={2} textAlign="center">
               <img
                 src={preview}
                 alt="preview"
-                style={{ width: 120, height: 120, borderRadius: 8, objectFit: "cover" }}
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: 8,
+                  objectFit: "cover",
+                }}
               />
-              
             </Box>
           )}
 
-          <Dialog open={openCropper} onClose={() => setOpenCropper(false)} maxWidth="sm" fullWidth>
-            <DialogContent sx={{ position: "relative", height: 400, background: "#222", borderRadius: 2 }}>
+          <Dialog
+            open={openCropper}
+            onClose={() => setOpenCropper(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogContent
+              sx={{
+                position: "relative",
+                height: 400,
+                background: "#222",
+                borderRadius: 2,
+              }}
+            >
               {imageSrc && (
                 <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
                   <Cropper
@@ -217,10 +253,21 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
                     aspect={1}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
-                    onCropComplete={(croppedArea, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+                    onCropComplete={(croppedArea, croppedAreaPixels) =>
+                      setCroppedAreaPixels(croppedAreaPixels)
+                    }
                   />
-                  <Box sx={{ position: "absolute", bottom: 10, left: 20, right: 20 }}>
-                    <Typography variant="body2" color="white">Zoom</Typography>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 10,
+                      left: 20,
+                      right: 20,
+                    }}
+                  >
+                    <Typography variant="body2" color="white">
+                      Zoom
+                    </Typography>
                     <Slider
                       value={zoom}
                       min={1}
@@ -237,7 +284,10 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
               <Button onClick={() => setOpenCropper(false)}>Cancelar</Button>
               <Button
                 onClick={async () => {
-                  const croppedFile = await getCroppedImg(imageSrc, croppedAreaPixels);
+                  const croppedFile = await getCroppedImg(
+                    imageSrc,
+                    croppedAreaPixels
+                  );
                   setFieldValue("foto", croppedFile);
                   setPreview(URL.createObjectURL(croppedFile));
                   setOpenCropper(false);
@@ -249,21 +299,28 @@ function EditObservador({ ci, tipo, token, onClose, onUpdate }) {
           </Dialog>
 
           <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button variant="contained" color="primary" type="submit" disabled={isSubmitting || loading}>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={isSubmitting || loading}
+            >
               {loading ? "Actualizando..." : "Actualizar"}
             </Button>
-            <Button 
+            <Button
               onClick={onClose}
               variant="outlined"
               size="small"
               sx={{
-                  '&:hover': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    borderColor: 'primary.main',
-                  },
-                }}
-              >Cancelar</Button>
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  borderColor: "primary.main",
+                },
+              }}
+            >
+              Cancelar
+            </Button>
           </Box>
         </Form>
       )}
