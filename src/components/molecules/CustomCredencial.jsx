@@ -98,7 +98,7 @@ const CustomCredencial = ({ persona, lado }) => {
                     color:"white"
                 }}
             >
-                {"Válido Elecciones Generales 2025"}
+                {"Válido Elecciones Generales 2026"}
             </Typography>
         </>
       )}

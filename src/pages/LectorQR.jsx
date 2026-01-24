@@ -131,7 +131,7 @@ const LectorQR = () => {
         </Grid>
 
         <Typography align="center" color="primary.main" fontSize={12} lineHeight={1.2}>
-          {'ELECCIONES GENERALES 2025'}
+          {'ELECCIONES GENERALES 2026'}
           <br />
           {'SISTEMA DE ACCESO CÓMPUTO'}
           <br />
