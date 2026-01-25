@@ -169,7 +169,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
                     fontFamily: "Source Sans Pro, sans-serif",
                 }}
             >
-                {"ELECCIONES GENERALES 2026"}
+                {"ELECCIONES SUBNACIONALES 2026"}
             </Typography>
         </>
       )}

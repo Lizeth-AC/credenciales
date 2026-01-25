@@ -89,7 +89,7 @@ const QRScanner = () => {
         </Grid>
 
         <Typography align="center" color="primary.main" fontSize={12} lineHeight={1.2}>
-          {"ELECCIONES GENERALES 2026"}
+          {"ELECCIONES SUBNACIONALES 2026"}
           <br />
           {"SISTEMA DE ACCESO CÓMPUTO"}
           <br /><br />
