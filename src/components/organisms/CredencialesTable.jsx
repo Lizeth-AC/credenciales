@@ -38,7 +38,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import FotoCelda from '../atoms/FotoCelda';
 
 const CredencialesTable = ({ data, onDeleteSuccess }) => {
-  const [filters, setFilters] = useState({ cargo: '', estado: '' });
+  const [filters, setFilters] = useState({ cargo: '', estado: '' , año: '', seccion: '' });
   const [orderBy, setOrderBy] = useState('');
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
@@ -119,8 +119,12 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
         : filters.estado === '1'
         ? item.estado === 1
         : item.estado !== 1;
+    
+    const yearCreated = new Date(item.created_at).getFullYear().toString();
+    const matchAño = filters.año === '' ? true : filters.año === yearCreated;
+    const matchSeccion = filters.seccion === '' ? true : (item.abreviatura || '').toLowerCase().includes(filters.seccion.toLowerCase());
 
-    return matchCargo && matchDate && matchEstado;
+    return matchCargo && matchDate && matchEstado && matchAño && matchSeccion;
   });
 }, [data, filters, selectedDate]);
 
@@ -255,7 +259,7 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
     // --- ENCABEZADO ---
     doc.setFontSize(12);
     doc.setTextColor(40);
-    doc.text('PLANILLA DE ENTREGA Y DEVOLUCIÓN DE CREDENCIALES ELECCIONES GENERALES SEGUNDA VUELTA 2025', pageWidth / 2, 115, { align: 'center' });
+    doc.text('PLANILLA DE ENTREGA Y DEVOLUCIÓN DE CREDENCIALES ELECCIONES SUBNACIONALES 2026', pageWidth / 2, 115, { align: 'center' });
     doc.setLineWidth(0.1);
     doc.setDrawColor(0, 0, 0);
     doc.line(97, 117, pageWidth - 95, 117);
@@ -337,6 +341,12 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
       {/* Filtros */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <TextField
+          label="Filtrar por Sección"
+          size="small"
+          value={filters.seccion}
+          onChange={handleFilterChange('seccion')}
+        />
+        <TextField
           label="Filtrar por Cargo"
           size="small"
           value={filters.cargo}
@@ -366,6 +376,21 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
             <MenuItem value="">Todos</MenuItem>
             <MenuItem value="1">Sí</MenuItem>
             <MenuItem value="0">No</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Año</InputLabel>
+          <Select
+            value={filters.año}
+            label="Fecha"
+            onChange={(e) => {
+              setFilters({ ...filters, año: e.target.value });
+              setPage(0);
+            }}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value="2026">2026</MenuItem>
+            <MenuItem value="2025">2025</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -514,8 +539,8 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {new Date(item.updated_at).toLocaleDateString() + " " + 
-                      new Date(item.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      {new Date(item.created_at).toLocaleDateString() + " " +
+                      new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>

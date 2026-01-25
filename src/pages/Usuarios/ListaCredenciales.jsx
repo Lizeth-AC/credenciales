@@ -1,12 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
 import CredencialesTable from '../../components/organisms/CredencialesTable';
+import { Autocomplete } from '@mui/material';
+
 
 const ListaCredenciales = () => {
   const [filtroNombre, setFiltroNombre] = useState('');
-  const [filtroCI, setFiltroCI] = useState('');
+  const [filtroCI, setFiltroCI] = useState([]);
   const [personal, setPersonal] = useState([]);
   const [ordenAsc, setOrdenAsc] = useState(true);
+
+  const listaCI = useMemo(() => {
+  return [...new Set(personal.map(p => p.ci))];
+}, [personal]);
 
   useEffect(() => {
     obtenerPersonal();
@@ -22,17 +28,20 @@ const ListaCredenciales = () => {
     }
   };
 
-  const personalVisible = useMemo(() => {
-  let lista = personal.filter((item) => {
+const personalVisible = useMemo(() => {
+  return personal.filter((item) => {
     const nombreCompleto = `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.toLowerCase();
-    const ciTexto = item.ci?.toLowerCase() || '';
-    return (
-      nombreCompleto.includes(filtroNombre.toLowerCase()) &&
-      ciTexto.includes(filtroCI.toLowerCase())
-    );
+
+    const matchNombre = nombreCompleto.includes(filtroNombre.toLowerCase());
+
+    const matchCI =
+      filtroCI.length === 0 ||
+      filtroCI.includes(item.ci);
+
+    return matchNombre && matchCI;
   });
-  return lista;
-  }, [personal, filtroNombre, filtroCI]);
+}, [personal, filtroNombre, filtroCI]);
+
 
   const abrirVentanaEdicion = (idPersonal) => {
     const nuevaVentana = window.open(
@@ -62,13 +71,24 @@ const ListaCredenciales = () => {
             size="small"
             sx={{ width: 250 }}
           />
-          <TextField
-            label="Buscar por CI..."
+          <Autocomplete
+            multiple
+            options={listaCI}
             value={filtroCI}
-            onChange={(e) => setFiltroCI(e.target.value)}
+            onChange={(event, newValue) => {
+              setFiltroCI(newValue);
+            }}
             size="small"
-            sx={{ width: 200 }}
+            sx={{ width: 300 }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Filtrar por CI"
+                placeholder="Selecciona uno o varios"
+              />
+            )}
           />
+
         </Box>
 
         <CredencialesTable
