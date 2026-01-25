@@ -493,9 +493,9 @@ const CredencialesTable = ({ data, onDeleteSuccess }) => {
                   <TableCell>Imp.</TableCell>
                   <TableCell>
                     <TableSortLabel
-                      active={orderBy === 'updated_at'}
-                      direction={orderBy === 'updated_at' ? order : 'asc'}
-                      onClick={() => handleSort('updated_at')}
+                      active={orderBy === 'created_at'}
+                      direction={orderBy === 'created_at' ? order : 'asc'}
+                      onClick={() => handleSort('created_at')}
                     >
                       Fecha
                     </TableSortLabel>

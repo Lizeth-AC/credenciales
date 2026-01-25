@@ -29,18 +29,21 @@ const ListaCredenciales = () => {
   };
 
 const personalVisible = useMemo(() => {
-  return personal.filter((item) => {
-    const nombreCompleto = `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.toLowerCase();
+  return personal
+    .filter((item) => {
+      const nombreCompleto =
+        `${item.nombre || ''} ${item.paterno || ''} ${item.materno || ''}`.toLowerCase();
 
-    const matchNombre = nombreCompleto.includes(filtroNombre.toLowerCase());
+      const matchNombre = nombreCompleto.includes(filtroNombre.toLowerCase());
 
-    const matchCI =
-      filtroCI.length === 0 ||
-      filtroCI.includes(item.ci);
+      const matchCI =
+        filtroCI.length === 0 || filtroCI.includes(item.ci);
 
-    return matchNombre && matchCI;
-  });
+      return matchNombre && matchCI;
+    })
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // 👈 DESC
 }, [personal, filtroNombre, filtroCI]);
+
 
 
   const abrirVentanaEdicion = (idPersonal) => {
