@@ -125,7 +125,7 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               p: 0,
             }}
           >
-            {"Válido ELECCIONES SUBNACIONALES 2026"}
+            {"Válido Elecciones Subnacionales 2026"}
           </Typography>
         </>
       )}
