@@ -17,6 +17,8 @@ import PrintPageWrapper from "../organisms/PrintPageWrapper";
 import CredentialPages from "../organisms/CredentialPageGroup";
 import html2pdf from "html2pdf.js";
 import AutocompleteCi from "../molecules/AutocompleteCi";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+
 
 const chunkArray = (array, size) => {
   const chunks = [];
@@ -37,6 +39,8 @@ const CredentialPrintPage = ({ fetchData }) => {
   const [accesoComputo, setAccesoComputo] = useState(0);
   const [alert, setAlert] = useState({ open: false, message: "", severity: "info" });
   const printRef = useRef();
+  const [estado, setEstadoImpreso] = useState(null);
+
   const showAlert = (message, severity = "info") => {
     setAlert({ open: true, message, severity });
   };
@@ -69,9 +73,9 @@ const CredentialPrintPage = ({ fetchData }) => {
       selectedCargo && selectedCargo.nombre === "NOTARIO ELECTORAL" && selectedRecinto
         ? selectedRecinto
         : "";
-
+    
     try {
-      const result = await fetchData(inicio, fin, cargo, circunscripcion, accesoValue);
+      const result = await fetchData(inicio, fin, cargo, circunscripcion, accesoValue, estado);
 
       await new Promise((res) => setTimeout(res, 2000));
 
@@ -149,6 +153,18 @@ const CredentialPrintPage = ({ fetchData }) => {
           selectedRecinto={selectedRecinto}
           setSelectedRecinto={setSelectedRecinto}
         />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Impreso</InputLabel>
+          <Select
+            value={estado}
+            label="Impreso"
+            onChange={(e) => setEstadoImpreso(e.target.value)}
+          >     
+            <MenuItem value={null}>Todos</MenuItem>
+            <MenuItem value={1}>Sí</MenuItem>
+            <MenuItem value={0}>No</MenuItem>
+          </Select>
+        </FormControl>
 
         <FormGroup row sx={{ alignItems: 'center', gap: 2 }}>
           <FormControlLabel

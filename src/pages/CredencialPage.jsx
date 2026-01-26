@@ -7,7 +7,7 @@ const CredencialesPage = () => {
   const [data, setData] = useState([]);
   
 
-  const fetchData = async (inicio, fin, cargo, circunscripcion, accesoComputo) => {
+  const fetchData = async (inicio, fin, cargo, circunscripcion, accesoComputo, estado) => {
     try {
       const params = new URLSearchParams();
 
@@ -16,6 +16,7 @@ const CredencialesPage = () => {
       if (cargo) params.append("cargo", cargo);
       if (circunscripcion) params.append("circunscripcion", circunscripcion);
       if (accesoComputo === 1) params.append("accesoComputo", 1);
+      if (estado !== null) params.append("estado", estado);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/list/personal-filter?${params.toString()}`);
 
       if (!response.ok) {
