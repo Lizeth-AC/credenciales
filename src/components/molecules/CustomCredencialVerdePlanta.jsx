@@ -44,7 +44,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
                 fontSize: "7pt",
                 lineHeight: 1,
                 fontFamily: "Source Sans Pro, sans-serif",
-                mt: "1.5mm",
+                mt: "0.5mm",
               }}
             >
               {"CI: " + safePersona.ci}
@@ -54,7 +54,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
             <Typography
               sx={{
                 fontWeight: 800,
-                fontSize: "5.7pt",
+                fontSize: "6pt",
                 fontFamily: "Source Sans Pro, sans-serif",
                 whiteSpace: "normal",
                 wordBreak: "break-word",
@@ -68,7 +68,7 @@ const CustomCredencialVerde = ({ persona, lado }) => {
             <Typography
               sx={{
                 fontWeight: 800,
-                fontSize: "5.8pt",
+                fontSize: "6pt",
                 lineHeight: 1,
                 fontFamily: "Lato, sans-serif",
               }}
@@ -76,30 +76,6 @@ const CustomCredencialVerde = ({ persona, lado }) => {
               {safePersona.cargo_nombre}
             </Typography>
           </Box>
-          <Box
-              sx={{
-              position: "absolute",
-              top: "1.4cm",
-              left: "2cm",
-              width: "0.025cm",
-              height: "1.2cm",
-              display: "flex",
-              flexDirection: "column",
-              textAlign: "center",
-              backgroundColor:"primary.main"
-            }}
-            ></Box>
-          <img
-                src={`/EleccionesLogo.png`}
-                alt="foto"
-                style={{
-                    position: "absolute",
-                    top: "1.6cm",
-                    left: "0.2cm",
-                    width: "1.6cm",
-                    objectFit: "cover",
-                }}
-            />
           <img
                 src={`/credenciales/qr.png`}
                 alt="foto"
@@ -117,13 +93,13 @@ const CustomCredencialVerde = ({ persona, lado }) => {
                 alt="foto"
                 style={{
                     position: "absolute",
-                    top: "1.5cm",
-                    left: "2.1cm",
-                    width: "1.5cm",
+                    top: "1.1cm",
+                    left: "0.7cm",
+                    width: "2.5cm",
                     objectFit: "cover",
                 }}
             />
-           <img
+          <img
               src={`data:image/jpeg;base64,${safePersona.photo}`}
               alt="foto"
               style={{
@@ -139,32 +115,17 @@ const CustomCredencialVerde = ({ persona, lado }) => {
             <Typography
                 sx={{
                     position: "absolute",
-                    bottom: "0.35cm",
+                    bottom: "0.1cm",
                     width: "100%",
                     lineHeight:"1.3",
                     fontWeight:"700",
-                    fontSize: "7pt",
+                    fontSize: "10pt",
                     color:"white",
                     textAlign:"center",
                     fontFamily: "Source Sans Pro, sans-serif",
                 }}
             >
-                {safePersona.cargo_nombre==="ASISTENTE ADMINISTRATIVA"?"PERSONAL EVENTUAL":"PERSONAL EVENTUAL"}
-            </Typography>
-            <Typography
-                sx={{
-                    position: "absolute",
-                    bottom: "0.09cm",
-                    width: "100%",
-                    lineHeight:"1.3",
-                    fontWeight:"700",
-                    fontSize: "7pt",
-                    color:"white",
-                    textAlign:"center",
-                    fontFamily: "Source Sans Pro, sans-serif",
-                }}
-            >
-                {"ELECCIONES SUBNACIONALES 2026"}
+                {safePersona.cargo_nombre==="ASISTENTE ADMINISTRATIVA"?"SERVIDOR PÚBLICO":"SERVIDOR PÚBLICO"}
             </Typography>
         </>
       )}

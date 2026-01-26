@@ -108,6 +108,26 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
                 objectFit: "cover",
               }}
             />
+
+            <Typography
+                sx={{
+                    position: "absolute",
+                    top: "5.7cm",
+                    // left: "2.5cm",
+                    width: "100%",
+                    textAlign: "center",
+                    lineHeight:"1.3",
+                    fontWeight:"800",
+                    fontSize: "18pt",
+                    color:"#353a37df"
+                }}
+            >
+                {safePersona.cargo_nombre=="NOTARIO ELECTORAL"?"C-"+safePersona.ciexterno:""}
+            </Typography>
+
+                
+
+
             <Typography
             sx={{
               position: "absolute",
@@ -145,6 +165,21 @@ const CustomCredencialBlanco = ({ persona, lado }) => {
               }}
             >
               {safePersona.cargo_nombre}
+            </Typography>
+            <Typography
+                sx={{
+                    position: "absolute",
+                    top: "0.5cm",
+                    left: "2.5cm",
+                    width: "100%",
+                    textAlign: "center",
+                    lineHeight:"1.3",
+                    fontWeight:"800",
+                    fontSize: "9pt",
+                    // color:"#3a3a35ff"
+                }}
+            >
+                {safePersona.cargo_nombre=="NOTARIO ELECTORAL"?"C-"+safePersona.ciexterno:""}
             </Typography>
                   
               </>

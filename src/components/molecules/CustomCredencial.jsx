@@ -30,7 +30,7 @@ const CustomCredencial = ({ persona, lado }) => {
               top: "2.9cm",
               left: 0,
               width: "100%",
-              fontWeight:780,
+              fontWeight:800,
               textAlign: "center",
               fontSize: "6pt"
             }}
@@ -55,9 +55,11 @@ const CustomCredencial = ({ persona, lado }) => {
               top: "5.22cm",
               left: 0,
               width: "100%",
+              fontWeight: "700",
               textAlign: "center",
-              fontSize: "8pt",
+              fontSize: "7pt",
               lineHeight: "0.9",
+              mt: "1mm",
             }}
           >
             {safePersona.nombre+" "+safePersona.paterno+" "+safePersona.materno}
@@ -65,10 +67,11 @@ const CustomCredencial = ({ persona, lado }) => {
           <Typography
             sx={{
               position: "absolute",
-              bottom: "0.56cm",
+              bottom: "0.59cm",
               left: "4.7cm",
               width: "100%",
-              fontSize: "7pt"
+              fontSize: "7pt",
+              fontWeight: "800",
             }}
           >
             {safePersona.ci}

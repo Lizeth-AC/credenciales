@@ -2,6 +2,7 @@ import React from "react";
 import { Grid } from "@mui/material";
 import CustomCredencial from "../molecules/CustomCredencial";
 import CustomCredencialVerde from "../molecules/CustomCredencialVerde";
+import CustomCredencialVerdePlanta from "../molecules/CustomCredencialVerdePlanta";
 import CustomCredencialQR from "../molecules/CustomCredencialQR";
 import CustomCredencialBlanco from "../molecules/CustomCredencialBlanco";
 import CustomCredencialExternoCara from "../molecules/CustomCredencialExternoCara";
@@ -27,6 +28,8 @@ export default function CredentialSheet({ persons, side, cargos = [], accesoComp
     }else{
       if (color === "verde") {
       return <CustomCredencialVerde persona={persona} lado={side} />;
+    } else if (color === "planta") {
+      return <CustomCredencialVerdePlanta persona={persona} lado={side} />;
     } else if (color === "externo") {
       return <CustomCredencialExternoCara persona={persona} lado={side} />;
     } else if (color === "blanco") {
